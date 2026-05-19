@@ -130,7 +130,7 @@ jobs:
       -
         name: Create automatic release on new versioned tag
         if: startsWith(steps.get_version.outputs.VERSION, 'v')
-        uses: marvinpinto/action-automatic-releases@v1.1.0
+        uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           draft: false
