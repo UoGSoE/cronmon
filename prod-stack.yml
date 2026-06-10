@@ -121,10 +121,11 @@ services:
 
   redis:
     # Keep prod pinned by digest for immutable deployments.
+    # redis:8.4.4 — pinned 2026-06-10
     # To update this digest:
-    #  docker pull redis:8.2.2
+    #  docker pull redis:8.4.4
     #  docker images --digests | grep '^redis'
-    image: redis@sha256:f0957bcaa75fd58a9a1847c1f07caf370579196259d69ac07f2e27b5b389b021
+    image: redis@sha256:2682db57264ed5a15c2f2b7e9b4305bb5f1501bffc651ca1be6689a0a7d4c016
     deploy: *default-deploy
     logging: *default-logging
     networks:

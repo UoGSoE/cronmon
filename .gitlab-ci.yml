@@ -170,7 +170,9 @@ deploy_to_prod:
     DOTENV: ${PROD_DOTENV}
 
 .build:
-  image: docker:stable
+  # docker:28 — pinned 2026-06-10 (was docker:stable, a deprecated moving tag frozen at v19/Dec 2020)
+  # refresh: docker pull docker:28 && docker images --digests | grep '^docker'
+  image: docker:28@sha256:2a232a42256f70d78e3cc5d2b5d6b3276710a0de0596c145f627ecfae90282ac
   variables:
     DOCKER_TARGET: ""
     IMAGE_NAME: ""
@@ -181,7 +183,9 @@ deploy_to_prod:
 
 .deployment:
   when: manual
-  image: docker:stable
+  # docker:28 — pinned 2026-06-10 (was docker:stable, a deprecated moving tag frozen at v19/Dec 2020)
+  # refresh: docker pull docker:28 && docker images --digests | grep '^docker'
+  image: docker:28@sha256:2a232a42256f70d78e3cc5d2b5d6b3276710a0de0596c145f627ecfae90282ac
   variables:
     IMAGE_NAME: ""
     TRAEFIK_BACKEND: ""
