@@ -56,7 +56,7 @@ RUN composer install \
 
 ### Build JS/css assets
 #- node:22 digest-pinned 2026-06-09; Dependabot (docker ecosystem) raises PRs to move the pin
-FROM node:22@sha256:1031993481795705055273f2eef0c24597abdcb277d6e058c82f78cbbdef92a6 as frontend
+FROM node:26@sha256:e3ffe0cbaeebdcddbfe1ee7bca9b564a92863a8386d5b99a3d72677b3667b61d as frontend
 
 # workaround for mix.version() webpack bug
 RUN ln -s /home/node/public /public
