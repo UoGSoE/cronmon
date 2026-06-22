@@ -36,6 +36,18 @@ it('patches a job the user owns', function () {
         ->and($fresh->grace_value)->toBe(30);
 });
 
+it('rejects patching a job with an unparseable cron expression', function () {
+    $alice = User::factory()->create();
+    $job = Job::factory()->forUser($alice)->withCron('0 2 * * *')->create();
+    Sanctum::actingAs($alice, ['jobs:write']);
+
+    $this->patchJson("/api/v1/jobs/{$job->id}", [
+        'cron_expression' => 'every tuesday plz',
+    ])->assertStatus(422);
+
+    expect($job->fresh()->cron_expression)->toBe('0 2 * * *');
+});
+
 it('updates a job location and can clear it via the API', function () {
     $alice = User::factory()->create();
     $job = Job::factory()->forUser($alice)->create(['location' => 'Rankine']);

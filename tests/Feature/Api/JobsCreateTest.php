@@ -78,6 +78,34 @@ it('creates a personal interval job for the authenticated user', function () {
         ->and($job->grace_value)->toBe(30);
 });
 
+it('rejects creating a job with an unparseable cron expression', function () {
+    $alice = User::factory()->create();
+    Sanctum::actingAs($alice, ['jobs:write']);
+
+    $this->postJson('/api/v1/jobs', [
+        'name' => 'Bad cron',
+        'cron_expression' => 'every tuesday plz',
+        'grace_value' => 5,
+        'grace_units' => 'minutes',
+    ])->assertStatus(422);
+
+    expect(Job::where('name', 'Bad cron')->count())->toBe(0);
+});
+
+it('accepts a cron macro such as @daily', function () {
+    $alice = User::factory()->create();
+    Sanctum::actingAs($alice, ['jobs:write']);
+
+    $this->postJson('/api/v1/jobs', [
+        'name' => 'Macro job',
+        'cron_expression' => '@daily',
+        'grace_value' => 5,
+        'grace_units' => 'minutes',
+    ])->assertCreated();
+
+    expect(Job::firstWhere('name', 'Macro job')->cron_expression)->toBe('@daily');
+});
+
 it('persists the location field on the API create endpoint', function () {
     $alice = User::factory()->create();
     Sanctum::actingAs($alice, ['jobs:write']);

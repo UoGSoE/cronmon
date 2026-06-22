@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1;
 
 use App\Enums\GraceUnit;
 use App\Enums\ScheduleInterval;
+use App\Rules\ValidCronExpression;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +24,7 @@ class UpdateJobRequest extends FormRequest
             'name' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'location' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'cron_expression' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'cron_expression' => ['sometimes', 'nullable', 'string', 'max:255', new ValidCronExpression],
             'schedule_interval' => ['sometimes', 'nullable', Rule::enum(ScheduleInterval::class)],
             'schedule_frequency' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'grace_value' => ['sometimes', 'required', 'integer', 'min:1'],
