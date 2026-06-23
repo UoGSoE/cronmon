@@ -38,6 +38,34 @@ A few things worth knowing:
 - Use `-fsS` so curl fails the cron command on a non-2xx response.
 - The response body is empty; the 200 status is the acknowledgement.
 
+## Prometheus metrics
+
+Cronmon exposes the current estate figures at `/metrics` in
+Prometheus text format, for scraping into Grafana — monitored,
+alerting, silenced and never-checked-in job counts per team, plus a
+shared `team="Personal"` bucket for user-owned jobs.
+
+The endpoint is guarded by a single static bearer token rather than
+SSO. Set `CRONMON_METRICS_TOKEN` in the environment to enable it;
+until a token is set the endpoint returns `503`, and a missing or
+wrong token gets `403`. Point Prometheus at it with the token as the
+scrape credential:
+
+```yaml
+scrape_configs:
+  - job_name: cronmon
+    scheme: https
+    metrics_path: /metrics
+    authorization:
+      type: Bearer
+      credentials: "your-CRONMON_METRICS_TOKEN"
+    static_configs:
+      - targets: ["cronmon.example.ac.uk"]
+```
+
+A ready-to-paste version with your deployment's own scheme and host
+is on the in-app **API examples** page (`/api/help`).
+
 ## Prerequisites
 
 - PHP 8.4

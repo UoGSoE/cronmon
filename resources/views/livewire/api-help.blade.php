@@ -186,6 +186,43 @@ r.raise_for_status()</pre>
         </flux:tab.panel>
     </flux:tab.group>
 
+    <flux:separator class="my-8" />
+
+    <flux:heading size="lg">Prometheus metrics</flux:heading>
+    <flux:text class="mt-2">
+        Current estate figures are exposed at <code>{{ $baseUrl }}/metrics</code> in Prometheus text format, for
+        scraping into Grafana. The endpoint needs a static bearer token: set <code>CRONMON_METRICS_TOKEN</code> in the
+        environment and have Prometheus present it as the scrape credential. Until a token is set the endpoint returns
+        <code>503</code>; a missing or wrong token gets <code>403</code>.
+    </flux:text>
+
+    <div class="mt-4 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div>
+            <flux:heading size="sm">Prometheus scrape config</flux:heading>
+            <pre class="mt-2 overflow-x-auto rounded bg-zinc-100 p-3 text-xs dark:bg-zinc-800">scrape_configs:
+  - job_name: cronmon
+    scheme: {{ $metricsScheme }}
+    metrics_path: /metrics
+    authorization:
+      type: Bearer
+      credentials: "your-CRONMON_METRICS_TOKEN"
+    static_configs:
+      - targets: ["{{ $metricsHost }}"]</pre>
+        </div>
+
+        <div>
+            <flux:heading size="sm">Metrics exposed</flux:heading>
+            <flux:text size="sm" class="mt-1">
+                All gauges, each labelled by <code>team</code> — the shared personal bucket appears as
+                <code>team="Personal"</code>. Sum a metric across teams in Grafana for an estate total.
+            </flux:text>
+            <pre class="mt-2 overflow-x-auto rounded bg-zinc-100 p-3 text-xs dark:bg-zinc-800">cronmon_jobs_total{team="…"}             # monitored jobs
+cronmon_jobs_alerting{team="…"}          # currently alerting
+cronmon_jobs_silenced{team="…"}          # silenced (job or owner)
+cronmon_jobs_never_checked_in{team="…"}  # never reported a check-in</pre>
+        </div>
+    </div>
+
     <flux:callout class="mt-8" icon="book-open" variant="secondary">
         <flux:callout.heading>Looking for the full reference?</flux:callout.heading>
         <flux:callout.text>

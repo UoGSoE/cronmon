@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\MetricsController;
 use App\Livewire\Admin\ApiTokens as AdminApiTokens;
 use App\Livewire\Admin\TeamDetail as AdminTeamDetail;
 use App\Livewire\Admin\Teams as AdminTeams;
@@ -16,6 +17,9 @@ require __DIR__.'/sso-auth.php';
 
 Route::get('/check-in/{token}', CheckInController::class)
     ->name('check-in');
+
+// Scraped by Prometheus with a static bearer token — no SSO, guarded in the controller.
+Route::get('/metrics', MetricsController::class)->name('metrics');
 
 Route::middleware('auth')->group(function () {
     Route::get('/', HomePage::class)->name('home');

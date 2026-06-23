@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Services\EstateStats;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -10,6 +11,15 @@ class AdminDashboard extends Component
 {
     public function render()
     {
-        return view('livewire.admin-dashboard');
+        $stats = new EstateStats;
+
+        return view('livewire.admin-dashboard', [
+            'totalCount' => $stats->totalCount(),
+            'alertingCount' => $stats->alertingCount(),
+            'silencedCount' => $stats->silencedCount(),
+            'neverCheckedInCount' => $stats->neverCheckedInCount(),
+            'alertingJobs' => $stats->alertingJobs(),
+            'breakdownRows' => $stats->breakdownRows(),
+        ]);
     }
 }

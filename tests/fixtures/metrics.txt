@@ -1,0 +1,20 @@
+# HELP cronmon_jobs_total Monitored jobs per team.
+# TYPE cronmon_jobs_total gauge
+cronmon_jobs_total{team="Alpha"} 2
+cronmon_jobs_total{team="Beta \"prod\""} 1
+cronmon_jobs_total{team="Personal"} 2
+# HELP cronmon_jobs_alerting Jobs currently alerting (raw alerting_since).
+# TYPE cronmon_jobs_alerting gauge
+cronmon_jobs_alerting{team="Alpha"} 1
+cronmon_jobs_alerting{team="Beta \"prod\""} 0
+cronmon_jobs_alerting{team="Personal"} 1
+# HELP cronmon_jobs_silenced Jobs currently silenced (job or owner).
+# TYPE cronmon_jobs_silenced gauge
+cronmon_jobs_silenced{team="Alpha"} 0
+cronmon_jobs_silenced{team="Beta \"prod\""} 1
+cronmon_jobs_silenced{team="Personal"} 0
+# HELP cronmon_jobs_never_checked_in Jobs that have never reported a check-in.
+# TYPE cronmon_jobs_never_checked_in gauge
+cronmon_jobs_never_checked_in{team="Alpha"} 0
+cronmon_jobs_never_checked_in{team="Beta \"prod\""} 0
+cronmon_jobs_never_checked_in{team="Personal"} 1
