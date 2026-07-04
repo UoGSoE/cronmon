@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\UserResource;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -19,13 +20,9 @@ class TeamMembersController extends Controller
         $team->users()->syncWithoutDetaching([$data['user_id']]);
 
         return response()->json([
-            'members' => $team->users()->orderBy('surname')->orderBy('forenames')->get()
-                ->map(fn (User $u) => [
-                    'id' => $u->id,
-                    'username' => $u->username,
-                    'full_name' => $u->full_name,
-                    'email' => $u->email,
-                ]),
+            'members' => UserResource::collection(
+                $team->users()->orderBy('surname')->orderBy('forenames')->get()
+            ),
         ], 201);
     }
 

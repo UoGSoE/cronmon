@@ -63,9 +63,9 @@
         <flux:heading size="lg">Alerting jobs</flux:heading>
 
         @if ($alertingJobs->isEmpty())
-            <div class="mt-4 rounded-lg bg-green-100 p-4 dark:bg-green-900/40">
-                <flux:text class="text-green-900 dark:text-green-100">Nothing alerting. Every job has checked in within its window.</flux:text>
-            </div>
+            <flux:callout variant="success" class="mt-4">
+                <flux:callout.text>Nothing alerting. Every job has checked in within its window.</flux:callout.text>
+            </flux:callout>
         @else
             <flux:table class="mt-4">
                 <flux:table.columns>

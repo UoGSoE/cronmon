@@ -103,22 +103,19 @@ class Users extends Component
             'form.email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->editingUserId)],
         ]);
 
-        if ($this->editingUserId) {
-            $user = User::findOrFail($this->editingUserId);
-            $user->update($this->form);
-            $message = 'User updated.';
-        } else {
-            User::create([
-                ...$this->form,
-                'is_staff' => true,
-                'is_admin' => false,
-                'password' => bcrypt(Str::random(64)),
-            ]);
-            $message = 'User created.';
+        $user = User::findOrNew($this->editingUserId);
+        $user->fill($this->form);
+
+        if (! $user->exists) {
+            $user->is_staff = true;
+            $user->is_admin = false;
+            $user->password = bcrypt(Str::random(64));
         }
 
+        $user->save();
+
         Flux::modal('user-form')->close();
-        Flux::toast($message, variant: 'success');
+        Flux::toast('User saved.', variant: 'success');
 
         $this->editingUserId = null;
     }
