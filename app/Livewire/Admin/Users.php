@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Admin;
 
-use App\Models\Job;
 use App\Models\User;
 use Flux\Flux;
 use Illuminate\Support\Str;
@@ -130,7 +129,7 @@ class Users extends Component
 
         $this->deletingUserId = $user->id;
         $this->deletingUserName = $user->full_name ?: $user->email;
-        $this->deletingUserPersonalJobCount = Job::where('user_id', $user->id)->count();
+        $this->deletingUserPersonalJobCount = $user->jobs()->count();
         $this->transferTargetUserId = null;
         $this->typedConfirmation = '';
         $this->resetErrorBag();
@@ -150,9 +149,11 @@ class Users extends Component
         ]);
 
         $user = User::findOrFail($this->deletingUserId);
+        $recipient = User::findOrFail($this->transferTargetUserId);
 
-        Job::where('user_id', $user->id)->update(['user_id' => $this->transferTargetUserId]);
-        $this->reassignAuthorshipAndDelete($user, $this->transferTargetUserId);
+        $user->transferPersonalJobsTo($recipient);
+        $user->reassignAuthoredJobsTo($recipient);
+        $user->delete();
 
         Flux::modal('delete-user')->close();
         Flux::toast('User deleted; personal jobs transferred.', variant: 'success');
@@ -167,22 +168,12 @@ class Users extends Component
             'typedConfirmation' => ['required', Rule::in([$user->full_name ?: $user->email])],
         ]);
 
-        $this->reassignAuthorshipAndDelete($user, auth()->id());
+        $user->reassignAuthoredJobsTo(auth()->user());
+        $user->delete();
 
         Flux::modal('delete-user')->close();
         Flux::toast('User and their personal jobs deleted.', variant: 'success');
         $this->resetDeleteState();
-    }
-
-    private function reassignAuthorshipAndDelete(User $user, int $authorshipFallbackUserId): void
-    {
-        Job::where('created_by_user_id', $user->id)
-            ->where(function ($q) use ($user) {
-                $q->whereNotNull('team_id')->orWhere('user_id', '!=', $user->id);
-            })
-            ->update(['created_by_user_id' => $authorshipFallbackUserId]);
-
-        $user->delete();
     }
 
     private function resetDeleteState(): void
