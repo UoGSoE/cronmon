@@ -87,7 +87,7 @@ it('shows the right empty state when the user has no personal jobs and no teams'
 });
 
 it('redirects unauthenticated visitors away from the home page', function () {
-    $this->get('/')->assertRedirect();
+    $this->get('/')->assertRedirect(route('login'));
 });
 
 it('shows alerting jobs from the users own and team jobs on the Alerting tab', function () {

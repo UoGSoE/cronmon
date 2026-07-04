@@ -2,7 +2,7 @@
     <div class="flex items-start justify-between gap-4">
         <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-                @if ($job->alerting_since)
+                @if ($job->isAlerting())
                     <flux:icon.exclamation-triangle variant="micro" class="text-red-500" />
                 @endif
                 <flux:heading size="xl">{{ $job->name }}</flux:heading>
@@ -10,11 +10,9 @@
             @if ($job->description)
                 <flux:text class="mt-2">{{ $job->description }}</flux:text>
             @endif
-            @if ($job->alerting_since)
+            @if ($job->isAlerting())
                 <flux:text size="sm" class="mt-1">
-                    @if ($job->alerting_since)
-                        Awol since {{ $job->alerting_since->diffForHumans() }}@if ($job->isCurrentlySilenced()) · @endif
-                    @endif
+                    Awol since {{ $job->alerting_since->diffForHumans() }}
                 </flux:text>
             @endif
         </div>

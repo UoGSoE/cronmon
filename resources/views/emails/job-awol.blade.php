@@ -17,7 +17,7 @@ Cronmon expected **{{ $job->name }}** to check in by now and hasn't heard from i
 **Last check-in:** never
 @endif
 
-@if ($job->alerting_since)
+@if ($job->isAlerting())
 **Awol since:** {{ $job->alerting_since->toDayDateTimeString() }} ({{ $job->alerting_since->diffForHumans() }})
 @endif
 

@@ -4,7 +4,7 @@
 <flux:card class="flex items-start justify-between gap-4 hover:shadow-md transition-shadow">
     <div class="min-w-0 flex-1">
         <div class="flex items-center gap-2">
-            @if ($job->alerting_since)
+            @if ($job->isAlerting())
                 <flux:icon.exclamation-triangle variant="micro" class="text-red-500" />
             @endif
             @if ($job->silenced_until && $job->silenced_until->isFuture())
@@ -35,7 +35,7 @@
             @else
                 No check-ins yet
             @endif
-            @if ($job->alerting_since)
+            @if ($job->isAlerting())
                 · Awol since {{ $job->alerting_since->diffForHumans() }}
             @endif
             @if ($job->silenced_until && $job->silenced_until->isFuture())

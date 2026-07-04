@@ -106,7 +106,8 @@ it('does not delete a team when the typed confirmation does not match', function
         ->test(Teams::class)
         ->set('deletingId', $doomed->id)
         ->set('typedConfirmation', 'Doomd')
-        ->call('deleteWithJobs');
+        ->call('deleteWithJobs')
+        ->assertHasErrors(['typedConfirmation']);
 
     expect(Team::find($doomed->id))->not->toBeNull()
         ->and(Job::find($job->id))->not->toBeNull();

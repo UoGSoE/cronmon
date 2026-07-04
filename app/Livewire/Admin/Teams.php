@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Team;
 use App\Models\User;
 use Flux\Flux;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -121,9 +122,9 @@ class Teams extends Component
     {
         $team = Team::findOrFail($this->deletingId);
 
-        if ($this->typedConfirmation !== $team->name) {
-            return;
-        }
+        $this->validate([
+            'typedConfirmation' => ['required', Rule::in([$team->name])],
+        ]);
 
         $team->delete();
 
