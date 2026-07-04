@@ -21,7 +21,7 @@ Route::get('/check-in/{token}', CheckInController::class)
 // Scraped by Prometheus with a static bearer token — no SSO, guarded in the controller.
 Route::get('/metrics', MetricsController::class)->name('metrics');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'staff'])->group(function () {
     Route::get('/', HomePage::class)->name('home');
     Route::get('/jobs/{job}', JobDetail::class)->name('jobs.show');
 

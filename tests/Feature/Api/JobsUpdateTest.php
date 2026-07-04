@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Job;
+use App\Models\Team;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
@@ -62,4 +63,17 @@ it('updates a job location and can clear it via the API', function () {
         ->assertOk()
         ->assertJsonPath('data.location', null);
     expect($job->fresh()->location)->toBeNull();
+});
+
+it('rejects a patch that would leave a job with no owner', function () {
+    $alice = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->users()->attach($alice);
+    $job = Job::factory()->forTeam($team)->create();
+    Sanctum::actingAs($alice, ['jobs:write']);
+
+    $this->patchJson("/api/v1/jobs/{$job->id}", ['team_id' => null])->assertStatus(422);
+
+    expect($job->fresh()->team_id)->toBe($team->id)
+        ->and($job->fresh()->user_id)->toBeNull();
 });
