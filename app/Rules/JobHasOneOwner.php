@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Translation\PotentiallyTranslatedString;
 
-class JobHasAnOwner implements ValidationRule
+class JobHasOneOwner implements ValidationRule
 {
     /**
      * Indicates whether the rule should be implicit.
@@ -25,8 +25,11 @@ class JobHasAnOwner implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($value === null && $this->job->user_id === null) {
-            $fail('A job must belong to a team or a user.');
+        $ownerless = $value === null && $this->job->user_id === null;
+        $ownedByBoth = $value !== null && $this->job->user_id !== null;
+
+        if ($ownerless || $ownedByBoth) {
+            $fail('A job must belong to exactly one of a team or a user.');
         }
     }
 }
