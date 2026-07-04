@@ -9,13 +9,15 @@ it('removes a user from the team', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $team = Team::factory()->create();
     $member = User::factory()->create();
-    $team->users()->attach($member);
+    $keeper = User::factory()->create();
+    $team->users()->attach([$member->id, $keeper->id]);
 
     Livewire::actingAs($admin)
         ->test(TeamDetail::class, ['team' => $team])
         ->call('removeUser', $member->id);
 
-    expect($team->users()->whereKey($member->id)->exists())->toBeFalse();
+    expect($team->users()->whereKey($member->id)->exists())->toBeFalse()
+        ->and($team->users()->whereKey($keeper->id)->exists())->toBeTrue();
 });
 
 it('stages a member for removal via the confirm modal', function () {

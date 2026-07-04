@@ -18,9 +18,11 @@ it('returns 404 when deleting a job the user cannot see', function () {
 it('deletes a job the user owns', function () {
     $alice = User::factory()->create();
     $job = Job::factory()->forUser($alice)->create();
+    $survivor = Job::factory()->forUser($alice)->create();
     Sanctum::actingAs($alice, ['jobs:write']);
 
     $this->deleteJson("/api/v1/jobs/{$job->id}")->assertNoContent();
 
-    expect(Job::find($job->id))->toBeNull();
+    expect(Job::find($job->id))->toBeNull()
+        ->and(Job::find($survivor->id))->not->toBeNull();
 });

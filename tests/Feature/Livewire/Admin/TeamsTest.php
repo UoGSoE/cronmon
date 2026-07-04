@@ -23,13 +23,15 @@ it('updates an existing team when opened for edit', function () {
 it('deletes a team that owns no jobs', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $team = Team::factory()->create();
+    $bystander = Team::factory()->create();
 
     Livewire::actingAs($admin)
         ->test(Teams::class)
         ->set('deletingId', $team->id)
         ->call('deleteEmpty');
 
-    expect(Team::find($team->id))->toBeNull();
+    expect(Team::find($team->id))->toBeNull()
+        ->and(Team::find($bystander->id))->not->toBeNull();
 });
 
 it('transfers a team\'s jobs to another team and deletes the original', function () {
@@ -84,6 +86,8 @@ it('deletes a team and its jobs when the typed confirmation matches the team nam
     $admin = User::factory()->create(['is_admin' => true]);
     $doomed = Team::factory()->create(['name' => 'Doomed']);
     $jobs = Job::factory()->count(2)->forTeam($doomed)->create();
+    $bystander = Team::factory()->create(['name' => 'Bystander']);
+    $bystanderJob = Job::factory()->forTeam($bystander)->create();
 
     Livewire::actingAs($admin)
         ->test(Teams::class)
@@ -95,6 +99,8 @@ it('deletes a team and its jobs when the typed confirmation matches the team nam
     foreach ($jobs as $job) {
         expect(Job::find($job->id))->toBeNull();
     }
+    expect(Team::find($bystander->id))->not->toBeNull()
+        ->and(Job::find($bystanderJob->id))->not->toBeNull();
 });
 
 it('does not delete a team when the typed confirmation does not match', function () {

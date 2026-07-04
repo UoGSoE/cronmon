@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\GraceUnit;
 use App\Enums\ScheduleInterval;
+use App\Mail\JobAwolNotification;
 use Cron\CronExpression;
 use Database\Factories\JobFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class Job extends Model
@@ -222,5 +224,18 @@ class Job extends Model
     public function hasNeverCheckedIn(): bool
     {
         return $this->last_checked_in_at === null;
+    }
+
+    public function markAsAlerting(): void
+    {
+        $this->alerting_since = now();
+    }
+
+    public function sendAlert(): void
+    {
+        Mail::to($this->resolveNotificationEmail())->queue(new JobAwolNotification($this));
+
+        $this->last_alerted_at = now();
+        $this->save();
     }
 }

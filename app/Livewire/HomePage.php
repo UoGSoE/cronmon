@@ -33,6 +33,20 @@ class HomePage extends Component
         }
     }
 
+    public function render()
+    {
+        return view('livewire.home-page', [
+            'teams' => auth()->user()->teams()->orderBy('name')->get(),
+            'intervalOptions' => ScheduleInterval::cases(),
+            'graceUnitOptions' => GraceUnit::cases(),
+            'existingLocations' => Job::query()
+                ->whereNotNull('location')
+                ->distinct()
+                ->orderBy('location')
+                ->pluck('location'),
+        ]);
+    }
+
     public function openCreate(): void
     {
         $this->form->reset();
@@ -98,20 +112,6 @@ class HomePage extends Component
     public function userIsInAnyTeam(): bool
     {
         return auth()->user()->teams()->exists();
-    }
-
-    public function render()
-    {
-        return view('livewire.home-page', [
-            'teams' => auth()->user()->teams()->orderBy('name')->get(),
-            'intervalOptions' => ScheduleInterval::cases(),
-            'graceUnitOptions' => GraceUnit::cases(),
-            'existingLocations' => Job::query()
-                ->whereNotNull('location')
-                ->distinct()
-                ->orderBy('location')
-                ->pluck('location'),
-        ]);
     }
 
     private function applyFilter(Builder $query): Builder

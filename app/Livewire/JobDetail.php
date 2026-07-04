@@ -35,25 +35,23 @@ class JobDetail extends Component
         $this->silenceReason = $job->silence_reason;
     }
 
-    public function openEdit(): void
+    public function render()
     {
-        $this->authorize('update', $this->job);
-        $this->form->reset();
-        $this->form->resetErrorBag();
-        $this->form->setJob($this->job);
-
-        Flux::modal('job-form')->show();
-    }
-
-    public function save(): void
-    {
-        $this->authorize('update', $this->job);
-        $this->form->save();
-
-        Flux::modal('job-form')->close();
-        Flux::toast('Job updated.', variant: 'success');
-
-        $this->job = $this->job->fresh();
+        return view('livewire.job-detail', [
+            'recentCheckIns' => $this->job->checkIns()
+                ->latest('checked_in_at')
+                ->limit(20)
+                ->get(),
+            'checkInUrl' => route('check-in', $this->job->check_in_token),
+            'teams' => auth()->user()->teams()->orderBy('name')->get(),
+            'intervalOptions' => ScheduleInterval::cases(),
+            'graceUnitOptions' => GraceUnit::cases(),
+            'existingLocations' => Job::query()
+                ->whereNotNull('location')
+                ->distinct()
+                ->orderBy('location')
+                ->pluck('location'),
+        ]);
     }
 
     public function updatedSilenced(bool $value): void
@@ -93,6 +91,27 @@ class JobDetail extends Component
         $this->job->silenceUntil(Carbon::parse($this->silenceUntil), $this->silenceReason);
     }
 
+    public function openEdit(): void
+    {
+        $this->authorize('update', $this->job);
+        $this->form->reset();
+        $this->form->resetErrorBag();
+        $this->form->setJob($this->job);
+
+        Flux::modal('job-form')->show();
+    }
+
+    public function save(): void
+    {
+        $this->authorize('update', $this->job);
+        $this->form->save();
+
+        Flux::modal('job-form')->close();
+        Flux::toast('Job updated.', variant: 'success');
+
+        $this->job = $this->job->fresh();
+    }
+
     public function delete()
     {
         $this->authorize('delete', $this->job);
@@ -102,24 +121,5 @@ class JobDetail extends Component
         Flux::toast('Job deleted.', variant: 'success');
 
         return $this->redirectRoute('home', navigate: true);
-    }
-
-    public function render()
-    {
-        return view('livewire.job-detail', [
-            'recentCheckIns' => $this->job->checkIns()
-                ->latest('checked_in_at')
-                ->limit(20)
-                ->get(),
-            'checkInUrl' => route('check-in', $this->job->check_in_token),
-            'teams' => auth()->user()->teams()->orderBy('name')->get(),
-            'intervalOptions' => ScheduleInterval::cases(),
-            'graceUnitOptions' => GraceUnit::cases(),
-            'existingLocations' => Job::query()
-                ->whereNotNull('location')
-                ->distinct()
-                ->orderBy('location')
-                ->pluck('location'),
-        ]);
     }
 }

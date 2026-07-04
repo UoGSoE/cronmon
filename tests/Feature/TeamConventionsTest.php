@@ -42,9 +42,11 @@ arch('strict equality everywhere')
     ->expect('App')
     ->toUseStrictEquality();
 
-arch('no ray() debugging left behind')
+// The php preset above already bans ray() and dump() (see Pest\ArchPresets\Php),
+// but NOT dd()/ddd() — the most common Laravel debug leftover. Cover them here.
+arch('no dd() or ddd() left behind')
     ->expect('App')
-    ->not->toUse('ray');
+    ->not->toUse(['dd', 'ddd']);
 
 arch('models stay a readable size')
     ->expect('App\Models')

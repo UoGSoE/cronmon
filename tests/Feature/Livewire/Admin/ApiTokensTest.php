@@ -20,6 +20,8 @@ it('revokes another users token from the admin page', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $alice = User::factory()->create();
     $token = $alice->createToken('alice-laptop')->accessToken;
+    $bob = User::factory()->create();
+    $bob->createToken('bob-laptop');
 
     Livewire::actingAs($admin)
         ->test(ApiTokens::class)
@@ -27,7 +29,8 @@ it('revokes another users token from the admin page', function () {
         ->call('revokeToken')
         ->assertHasNoErrors();
 
-    expect($alice->tokens()->count())->toBe(0);
+    expect($alice->tokens()->count())->toBe(0)
+        ->and($bob->tokens()->count())->toBe(1);
 });
 
 it('lists every users tokens for an admin', function () {

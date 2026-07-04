@@ -27,6 +27,24 @@ class Teams extends Component
 
     public string $typedConfirmation = '';
 
+    public function render()
+    {
+        $deletingTeam = $this->deletingId
+            ? Team::with('jobs')->find($this->deletingId)
+            : null;
+
+        return view('livewire.admin.teams', [
+            'teams' => Team::orderBy('name')->get(),
+            'deletingTeam' => $deletingTeam,
+            'otherTeams' => $deletingTeam
+                ? Team::where('id', '!=', $deletingTeam->id)->orderBy('name')->get()
+                : collect(),
+            'allUsers' => $deletingTeam
+                ? User::orderBy('surname')->orderBy('forenames')->get()
+                : collect(),
+        ]);
+    }
+
     public function openCreate(): void
     {
         $this->reset('editing');
@@ -130,23 +148,5 @@ class Teams extends Component
 
         Flux::modal('delete-team')->close();
         Flux::toast('Team and its jobs deleted.', variant: 'success');
-    }
-
-    public function render()
-    {
-        $deletingTeam = $this->deletingId
-            ? Team::with('jobs')->find($this->deletingId)
-            : null;
-
-        return view('livewire.admin.teams', [
-            'teams' => Team::orderBy('name')->get(),
-            'deletingTeam' => $deletingTeam,
-            'otherTeams' => $deletingTeam
-                ? Team::where('id', '!=', $deletingTeam->id)->orderBy('name')->get()
-                : collect(),
-            'allUsers' => $deletingTeam
-                ? User::orderBy('surname')->orderBy('forenames')->get()
-                : collect(),
-        ]);
     }
 }

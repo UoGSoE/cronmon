@@ -36,37 +36,17 @@ class TeamDetail extends Component
         $this->silenceReason = $team->silence_reason;
     }
 
-    public function addUser(): void
+    public function render()
     {
-        $this->validate([
-            'userToAddId' => ['required', 'integer', 'exists:users,id'],
+        return view('livewire.admin.team-detail', [
+            'team' => $this->team->fresh(),
+            'members' => $this->team->users()->orderBy('surname')->orderBy('forenames')->get(),
+            'candidates' => User::query()
+                ->whereDoesntHave('teams', fn ($q) => $q->whereKey($this->team->id))
+                ->orderBy('surname')
+                ->orderBy('forenames')
+                ->get(),
         ]);
-
-        $this->team->users()->syncWithoutDetaching($this->userToAddId);
-
-        $this->userToAddId = null;
-        Flux::toast('User added to team.', variant: 'success');
-    }
-
-    public function confirmRemoveUser(int $userId): void
-    {
-        $member = $this->team->users()->whereKey($userId)->firstOrFail();
-
-        $this->removingMemberId = $member->id;
-        $this->removingMemberName = $member->full_name ?: $member->email;
-
-        Flux::modal('remove-member')->show();
-    }
-
-    public function removeUser(int $userId): void
-    {
-        $this->team->users()->detach($userId);
-
-        $this->removingMemberId = null;
-        $this->removingMemberName = null;
-
-        Flux::modal('remove-member')->close();
-        Flux::toast('User removed from team.', variant: 'success');
     }
 
     public function updatedSilenced(bool $value): void
@@ -101,16 +81,36 @@ class TeamDetail extends Component
         $this->team->silenceUntil(Carbon::parse($this->silenceUntil), $this->silenceReason);
     }
 
-    public function render()
+    public function addUser(): void
     {
-        return view('livewire.admin.team-detail', [
-            'team' => $this->team->fresh(),
-            'members' => $this->team->users()->orderBy('surname')->orderBy('forenames')->get(),
-            'candidates' => User::query()
-                ->whereDoesntHave('teams', fn ($q) => $q->whereKey($this->team->id))
-                ->orderBy('surname')
-                ->orderBy('forenames')
-                ->get(),
+        $this->validate([
+            'userToAddId' => ['required', 'integer', 'exists:users,id'],
         ]);
+
+        $this->team->users()->syncWithoutDetaching($this->userToAddId);
+
+        $this->userToAddId = null;
+        Flux::toast('User added to team.', variant: 'success');
+    }
+
+    public function confirmRemoveUser(int $userId): void
+    {
+        $member = $this->team->users()->whereKey($userId)->firstOrFail();
+
+        $this->removingMemberId = $member->id;
+        $this->removingMemberName = $member->full_name ?: $member->email;
+
+        Flux::modal('remove-member')->show();
+    }
+
+    public function removeUser(int $userId): void
+    {
+        $this->team->users()->detach($userId);
+
+        $this->removingMemberId = null;
+        $this->removingMemberName = null;
+
+        Flux::modal('remove-member')->close();
+        Flux::toast('User removed from team.', variant: 'success');
     }
 }

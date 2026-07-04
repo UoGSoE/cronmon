@@ -46,19 +46,12 @@ class MySettings extends Component
         $this->silenceReason = $user->silence_reason;
     }
 
-    public function saveEmails(): void
+    public function render()
     {
-        $this->validate([
-            'notificationEmail' => ['nullable', 'email'],
-            'senderEmail' => ['nullable', 'email'],
+        return view('livewire.my-settings', [
+            'user' => auth()->user()->fresh(),
+            'apiTokens' => auth()->user()->tokens()->latest()->get(),
         ]);
-
-        auth()->user()->update([
-            'notification_email' => $this->notificationEmail,
-            'sender_email' => $this->senderEmail,
-        ]);
-
-        Flux::toast('Email preferences saved.', variant: 'success');
     }
 
     public function updatedSilenced(bool $value): void
@@ -91,6 +84,21 @@ class MySettings extends Component
         }
         $this->validate(['silenceReason' => ['nullable', 'string', 'max:255']]);
         auth()->user()->silenceUntil(Carbon::parse($this->silenceUntil), $this->silenceReason);
+    }
+
+    public function saveEmails(): void
+    {
+        $this->validate([
+            'notificationEmail' => ['nullable', 'email'],
+            'senderEmail' => ['nullable', 'email'],
+        ]);
+
+        auth()->user()->update([
+            'notification_email' => $this->notificationEmail,
+            'sender_email' => $this->senderEmail,
+        ]);
+
+        Flux::toast('Email preferences saved.', variant: 'success');
     }
 
     public function openCreateToken(): void
@@ -146,13 +154,5 @@ class MySettings extends Component
 
         $this->revokingTokenId = null;
         $this->revokingTokenName = null;
-    }
-
-    public function render()
-    {
-        return view('livewire.my-settings', [
-            'user' => auth()->user()->fresh(),
-            'apiTokens' => auth()->user()->tokens()->latest()->get(),
-        ]);
     }
 }

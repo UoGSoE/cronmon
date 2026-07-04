@@ -32,6 +32,18 @@ class Users extends Component
 
     public string $typedConfirmation = '';
 
+    public function render()
+    {
+        return view('livewire.admin.users', [
+            'users' => User::orderBy('surname')->orderBy('forenames')->get(),
+            'transferCandidates' => User::query()
+                ->when($this->deletingUserId, fn ($q) => $q->where('id', '!=', $this->deletingUserId))
+                ->orderBy('surname')
+                ->orderBy('forenames')
+                ->get(),
+        ]);
+    }
+
     public function toggleAdmin(int $id): void
     {
         if ($id === auth()->id()) {
@@ -163,18 +175,6 @@ class Users extends Component
         Flux::modal('delete-user')->close();
         Flux::toast('User and their personal jobs deleted.', variant: 'success');
         $this->resetDeleteState();
-    }
-
-    public function render()
-    {
-        return view('livewire.admin.users', [
-            'users' => User::orderBy('surname')->orderBy('forenames')->get(),
-            'transferCandidates' => User::query()
-                ->when($this->deletingUserId, fn ($q) => $q->where('id', '!=', $this->deletingUserId))
-                ->orderBy('surname')
-                ->orderBy('forenames')
-                ->get(),
-        ]);
     }
 
     private function reassignAuthorshipAndDelete(User $user, int $authorshipFallbackUserId): void

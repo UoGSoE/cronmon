@@ -8,13 +8,18 @@ it('removes a user from a team', function () {
     $admin = User::factory()->create(['is_admin' => true]);
     $team = Team::factory()->create();
     $alice = User::factory()->create();
-    $team->users()->attach($alice);
+    $bob = User::factory()->create();
+    $team->users()->attach([$alice->id, $bob->id]);
     Sanctum::actingAs($admin, ['admin:write']);
+
+    expect($team->users()->count())->toBe(2);
 
     $this->deleteJson("/api/v1/admin/teams/{$team->id}/members/{$alice->id}")
         ->assertNoContent();
 
-    expect($team->users()->pluck('users.id')->all())->not->toContain($alice->id);
+    $remaining = $team->users()->pluck('users.id')->all();
+    expect($remaining)->not->toContain($alice->id)
+        ->and($remaining)->toContain($bob->id);
 });
 
 it('adds a user to a team', function () {

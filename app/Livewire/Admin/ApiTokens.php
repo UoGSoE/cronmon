@@ -17,6 +17,18 @@ class ApiTokens extends Component
 
     public ?string $revokingTokenOwner = null;
 
+    public function render()
+    {
+        $tokens = PersonalAccessToken::query()
+            ->with('tokenable')
+            ->latest()
+            ->get();
+
+        return view('livewire.admin.api-tokens', [
+            'tokens' => $tokens,
+        ]);
+    }
+
     public function confirmRevokeToken(int $id): void
     {
         $token = PersonalAccessToken::findOrFail($id);
@@ -43,17 +55,5 @@ class ApiTokens extends Component
         $this->revokingTokenId = null;
         $this->revokingTokenName = null;
         $this->revokingTokenOwner = null;
-    }
-
-    public function render()
-    {
-        $tokens = PersonalAccessToken::query()
-            ->with('tokenable')
-            ->latest()
-            ->get();
-
-        return view('livewire.admin.api-tokens', [
-            'tokens' => $tokens,
-        ]);
     }
 }
