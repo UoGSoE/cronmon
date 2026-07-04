@@ -24,7 +24,7 @@ class CronmonEvaluate extends Command
                 return;
             }
 
-            if ($job->alerting_since === null) {
+            if (! $job->isAlerting()) {
                 $job->alerting_since = now();
                 $this->dispatchAlert($job);
 

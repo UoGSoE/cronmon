@@ -43,7 +43,7 @@ class EstateStats
     public function alertingJobs(): Collection
     {
         return $this->jobs()
-            ->filter(fn (Job $job) => $job->alerting_since !== null)
+            ->filter(fn (Job $job) => $job->isAlerting())
             ->sortBy(fn (Job $job) => $job->alerting_since->timestamp)
             ->values();
     }
@@ -56,7 +56,7 @@ class EstateStats
     public function alertingCount(): int
     {
         return $this->jobs()
-            ->filter(fn (Job $job) => $job->alerting_since !== null)
+            ->filter(fn (Job $job) => $job->isAlerting())
             ->count();
     }
 
@@ -70,7 +70,7 @@ class EstateStats
     public function neverCheckedInCount(): int
     {
         return $this->jobs()
-            ->filter(fn (Job $job) => $job->last_checked_in_at === null)
+            ->filter(fn (Job $job) => $job->hasNeverCheckedIn())
             ->count();
     }
 
@@ -117,9 +117,9 @@ class EstateStats
     private function rowFor(string $label, Collection $jobs): array
     {
         $total = $jobs->count();
-        $alerting = $jobs->filter(fn (Job $job) => $job->alerting_since !== null)->count();
+        $alerting = $jobs->filter(fn (Job $job) => $job->isAlerting())->count();
         $silenced = $jobs->filter(fn (Job $job) => $job->isCurrentlySilenced())->count();
-        $neverCheckedIn = $jobs->filter(fn (Job $job) => $job->last_checked_in_at === null)->count();
+        $neverCheckedIn = $jobs->filter(fn (Job $job) => $job->hasNeverCheckedIn())->count();
 
         return [
             'label' => $label,

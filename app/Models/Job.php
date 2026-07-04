@@ -194,4 +194,14 @@ class Job extends Model
 
         return (bool) $owner?->silenced_until?->isFuture();
     }
+
+    public function isAlerting(): bool
+    {
+        return $this->alerting_since !== null;
+    }
+
+    public function hasNeverCheckedIn(): bool
+    {
+        return $this->last_checked_in_at === null;
+    }
 }

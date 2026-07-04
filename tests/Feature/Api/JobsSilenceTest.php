@@ -58,3 +58,37 @@ it('silences a job until a future moment', function () {
     expect($fresh->silenced_until->equalTo($until))->toBeTrue()
         ->and($fresh->silence_reason)->toBe('On leave');
 });
+
+it('returns 404 silencing a job the user cannot see', function () {
+    $alice = User::factory()->create();
+    $bobsJob = Job::factory()->forUser(User::factory()->create())->create();
+    Sanctum::actingAs($alice, ['jobs:write']);
+
+    $this->postJson("/api/v1/jobs/{$bobsJob->id}/silence", [
+        'silenced_until' => now()->addDay()->toIso8601String(),
+    ])->assertStatus(404);
+
+    expect($bobsJob->fresh()->silenced_until)->toBeNull();
+});
+
+it('returns 404 unsilencing a job the user cannot see', function () {
+    $alice = User::factory()->create();
+    $bobsJob = Job::factory()->forUser(User::factory()->create())->silenced()->create();
+    Sanctum::actingAs($alice, ['jobs:write']);
+
+    $this->deleteJson("/api/v1/jobs/{$bobsJob->id}/silence")->assertStatus(404);
+
+    expect($bobsJob->fresh()->silenced_until)->not->toBeNull();
+});
+
+it('rejects silencing with a past silenced_until and leaves the job unsilenced', function () {
+    $alice = User::factory()->create();
+    $job = Job::factory()->forUser($alice)->create();
+    Sanctum::actingAs($alice, ['jobs:write']);
+
+    $this->postJson("/api/v1/jobs/{$job->id}/silence", [
+        'silenced_until' => now()->subDay()->toIso8601String(),
+    ])->assertStatus(422);
+
+    expect($job->fresh()->silenced_until)->toBeNull();
+});
