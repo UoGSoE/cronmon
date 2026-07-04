@@ -77,3 +77,16 @@ it('rejects a patch that would leave a job with no owner', function () {
     expect($job->fresh()->team_id)->toBe($team->id)
         ->and($job->fresh()->user_id)->toBeNull();
 });
+
+it('rejects a patch that would give a personal job a second owner', function () {
+    $alice = User::factory()->create();
+    $job = Job::factory()->forUser($alice)->create();
+    $team = Team::factory()->create();
+    $team->users()->attach($alice);
+    Sanctum::actingAs($alice, ['jobs:write']);
+
+    $this->patchJson("/api/v1/jobs/{$job->id}", ['team_id' => $team->id])->assertStatus(422);
+
+    expect($job->fresh()->user_id)->toBe($alice->id)
+        ->and($job->fresh()->team_id)->toBeNull();
+});

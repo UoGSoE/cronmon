@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\V1;
 
 use App\Enums\GraceUnit;
 use App\Enums\ScheduleInterval;
-use App\Rules\JobHasAnOwner;
+use App\Rules\JobHasOneOwner;
 use App\Rules\ValidCronExpression;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -33,7 +33,7 @@ class UpdateJobRequest extends FormRequest
             'team_id' => [
                 'sometimes',
                 'nullable',
-                new JobHasAnOwner($this->route('job')),
+                new JobHasOneOwner($this->route('job')),
                 Rule::exists('teams', 'id')->where(fn ($q) => $q->whereIn('id', $this->user()->teams()->pluck('teams.id'))),
             ],
             'notification_email' => ['sometimes', 'nullable', 'email'],

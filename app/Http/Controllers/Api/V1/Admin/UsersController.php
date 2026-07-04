@@ -6,11 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\StoreUserRequest;
 use App\Http\Requests\Api\V1\Admin\UpdateUserRequest;
 use App\Http\Resources\Api\V1\UserResource;
-use App\Models\Job;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class UsersController extends Controller
 {
@@ -50,11 +50,9 @@ class UsersController extends Controller
             return response()->json(['message' => 'You cannot delete yourself.'], 422);
         }
 
-        $personalJobCount = Job::where('user_id', $user->id)->count();
         $transferTo = $request->input('transfer_jobs_to');
-        $cascade = $request->boolean('delete_personal_jobs');
 
-        if ($personalJobCount > 0 && ! $transferTo && ! $cascade) {
+        if ($user->jobs()->exists() && ! $transferTo && ! $request->boolean('delete_personal_jobs')) {
             return response()->json([
                 'message' => 'User owns personal jobs. Specify either transfer_jobs_to (a user id) or delete_personal_jobs: true.',
             ], 422);
@@ -62,28 +60,20 @@ class UsersController extends Controller
 
         if ($transferTo) {
             $request->validate([
-                'transfer_jobs_to' => ['integer', 'exists:users,id', 'different:user'],
+                'transfer_jobs_to' => ['integer', 'exists:users,id', Rule::notIn([$user->id])],
             ]);
 
-            Job::where('user_id', $user->id)->update(['user_id' => $transferTo]);
-            $this->reassignAuthorshipAndDelete($user, $transferTo);
+            $recipient = User::findOrFail($transferTo);
+            $user->transferPersonalJobsTo($recipient);
+            $user->reassignAuthoredJobsTo($recipient);
+            $user->delete();
 
             return response()->json(null, 204);
         }
 
-        $this->reassignAuthorshipAndDelete($user, $request->user()->id);
+        $user->reassignAuthoredJobsTo($request->user());
+        $user->delete();
 
         return response()->json(null, 204);
-    }
-
-    private function reassignAuthorshipAndDelete(User $user, int $authorshipFallbackUserId): void
-    {
-        Job::where('created_by_user_id', $user->id)
-            ->where(function ($q) use ($user) {
-                $q->whereNotNull('team_id')->orWhere('user_id', '!=', $user->id);
-            })
-            ->update(['created_by_user_id' => $authorshipFallbackUserId]);
-
-        $user->delete();
     }
 }

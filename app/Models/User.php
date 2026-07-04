@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
@@ -53,6 +54,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Team::class);
     }
 
+    public function jobs(): HasMany
+    {
+        return $this->hasMany(Job::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return $this->forenames.' '.$this->surname;
@@ -77,5 +83,17 @@ class User extends Authenticatable
     public function isCurrentlySilenced(): bool
     {
         return (bool) $this->silenced_until?->isFuture();
+    }
+
+    public function transferPersonalJobsTo(User $recipient): void
+    {
+        $this->jobs()->update(['user_id' => $recipient->id]);
+    }
+
+    public function reassignAuthoredJobsTo(User $fallback): void
+    {
+        Job::where('created_by_user_id', $this->id)
+            ->where(fn ($query) => $query->whereNotNull('team_id')->orWhere('user_id', '!=', $this->id))
+            ->update(['created_by_user_id' => $fallback->id]);
     }
 }

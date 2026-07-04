@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Job;
+use App\Models\Team;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 
@@ -17,6 +18,20 @@ it('transfers personal jobs and deletes the user', function () {
 
     expect(User::find($target->id))->toBeNull()
         ->and($job->fresh()->user_id)->toBe($recipient->id);
+});
+
+it('refuses to transfer a deleted user\'s jobs to themselves', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $target = User::factory()->create();
+    $job = Job::factory()->forUser($target)->create();
+    Sanctum::actingAs($admin, ['admin:write']);
+
+    $this->deleteJson("/api/v1/admin/users/{$target->id}", [
+        'transfer_jobs_to' => $target->id,
+    ])->assertStatus(422);
+
+    expect(User::find($target->id))->not->toBeNull()
+        ->and($job->fresh()->user_id)->toBe($target->id);
 });
 
 it('cascades personal jobs when delete_personal_jobs is true', function () {
@@ -53,6 +68,21 @@ it('refuses to delete the signed-in admin via the API', function () {
         ->assertStatus(422);
 
     expect(User::find($admin->id))->not->toBeNull();
+});
+
+it('reassigns authorship of the deleted user\'s team jobs to the transfer recipient', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $target = User::factory()->create();
+    $recipient = User::factory()->create();
+    $team = Team::factory()->create();
+    $teamJob = Job::factory()->forTeam($team)->create(['created_by_user_id' => $target->id]);
+    Sanctum::actingAs($admin, ['admin:write']);
+
+    $this->deleteJson("/api/v1/admin/users/{$target->id}", [
+        'transfer_jobs_to' => $recipient->id,
+    ])->assertNoContent();
+
+    expect($teamJob->fresh()->created_by_user_id)->toBe($recipient->id);
 });
 
 it('deletes a user with no personal jobs', function () {
