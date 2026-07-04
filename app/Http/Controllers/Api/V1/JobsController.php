@@ -9,6 +9,7 @@ use App\Http\Resources\Api\V1\CheckInResource;
 use App\Http\Resources\Api\V1\JobResource;
 use App\Models\Job;
 use Dedoc\Scramble\Attributes\QueryParameter;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -158,12 +159,10 @@ class JobsController extends Controller
 
         $user = $request->user();
 
-        $base = Job::query();
-        if (! $user->is_admin) {
-            $base = $this->restrictToVisibleJobs($base, $user);
-        }
-
-        $base = $this->applyScope($base, $scope, $user);
+        $base = Job::query()
+            ->when(! $user->is_admin, fn (Builder $query) => $query->visibleTo($user))
+            ->when($scope === 'mine', fn (Builder $query) => $query->personalFor($user))
+            ->when($scope === 'teams', fn (Builder $query) => $query->forTeamsOf($user));
 
         $jobs = QueryBuilder::for($base)
             ->allowedFilters(
@@ -181,30 +180,5 @@ class JobsController extends Controller
             'jobs' => JobResource::collection($jobs)->response()->getData(true),
             'scope' => $scope,
         ]);
-    }
-
-    private function restrictToVisibleJobs($query, $user)
-    {
-        $teamIds = $user->teams()->pluck('teams.id');
-
-        return $query->where(function ($q) use ($user, $teamIds) {
-            $q->where('user_id', $user->id)
-                ->orWhereIn('team_id', $teamIds);
-        });
-    }
-
-    private function applyScope($query, string $scope, $user)
-    {
-        if ($scope === 'mine') {
-            return $query->where('user_id', $user->id)->whereNull('team_id');
-        }
-
-        if ($scope === 'teams') {
-            $teamIds = $user->teams()->pluck('teams.id');
-
-            return $query->whereIn('team_id', $teamIds);
-        }
-
-        return $query;
     }
 }

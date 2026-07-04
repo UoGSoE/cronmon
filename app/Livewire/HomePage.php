@@ -60,7 +60,7 @@ class HomePage extends Component
         return $this->sortForListing(
             $this->applyFilter(
                 Job::query()
-                    ->where('user_id', auth()->id())
+                    ->personalFor(auth()->user())
                     ->with(['team', 'user'])
             )->get()
         );
@@ -69,12 +69,10 @@ class HomePage extends Component
     #[Computed]
     public function teamJobs(): Collection
     {
-        $teamIds = auth()->user()->teams()->pluck('teams.id');
-
         return $this->sortForListing(
             $this->applyFilter(
                 Job::query()
-                    ->whereIn('team_id', $teamIds)
+                    ->forTeamsOf(auth()->user())
                     ->with(['team', 'user'])
             )->get()
         );
@@ -90,12 +88,7 @@ class HomePage extends Component
             ->with(['team', 'user']);
 
         if (! $user->is_admin) {
-            $teamIds = $user->teams()->pluck('teams.id');
-
-            $query->where(function ($builder) use ($user, $teamIds) {
-                $builder->where('user_id', $user->id)
-                    ->orWhereIn('team_id', $teamIds);
-            });
+            $query->visibleTo($user);
         }
 
         return $this->sortForListing($this->applyFilter($query)->get());

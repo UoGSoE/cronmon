@@ -6,6 +6,7 @@ use App\Enums\GraceUnit;
 use App\Enums\ScheduleInterval;
 use Cron\CronExpression;
 use Database\Factories\JobFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -81,6 +82,24 @@ class Job extends Model
     public function checkIns(): HasMany
     {
         return $this->hasMany(CheckIn::class);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): void
+    {
+        $query->where(function (Builder $builder) use ($user) {
+            $builder->where('user_id', $user->id)
+                ->orWhereIn('team_id', $user->teams()->pluck('teams.id'));
+        });
+    }
+
+    public function scopePersonalFor(Builder $query, User $user): void
+    {
+        $query->where('user_id', $user->id)->whereNull('team_id');
+    }
+
+    public function scopeForTeamsOf(Builder $query, User $user): void
+    {
+        $query->whereIn('team_id', $user->teams()->pluck('teams.id'));
     }
 
     public function resolveNotificationEmail(): string
