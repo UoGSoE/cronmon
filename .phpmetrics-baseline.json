@@ -1,0 +1,129 @@
+{
+  "_generated": "2026-07-04",
+  "App\\Mail\\JobAwolNotification": {
+    "ccn": 2,
+    "ccnMethodMax": 2,
+    "mi": 61.95,
+    "loc": 17
+  },
+  "App\\Models\\Job": {
+    "ccn": 14,
+    "ccnMethodMax": 5,
+    "mi": 40.52,
+    "loc": 110
+  },
+  "App\\Policies\\JobPolicy": {
+    "ccn": 6,
+    "ccnMethodMax": 6,
+    "mi": 51.79,
+    "loc": 33
+  },
+  "App\\Policies\\TeamPolicy": {
+    "ccn": 2,
+    "ccnMethodMax": 2,
+    "mi": 58.96,
+    "loc": 23
+  },
+  "App\\Livewire\\Forms\\JobForm": {
+    "ccn": 9,
+    "ccnMethodMax": 9,
+    "mi": 42.18,
+    "loc": 48
+  },
+  "App\\Livewire\\MySettings": {
+    "ccn": 6,
+    "ccnMethodMax": 2,
+    "mi": 47.01,
+    "loc": 96
+  },
+  "App\\Livewire\\Admin\\TeamDetail": {
+    "ccn": 6,
+    "ccnMethodMax": 2,
+    "mi": 48.24,
+    "loc": 74
+  },
+  "App\\Livewire\\Admin\\ApiTokens": {
+    "ccn": 4,
+    "ccnMethodMax": 3,
+    "mi": 63.88,
+    "loc": 34
+  },
+  "App\\Livewire\\Admin\\Users": {
+    "ccn": 7,
+    "ccnMethodMax": 3,
+    "mi": 41.42,
+    "loc": 103
+  },
+  "App\\Livewire\\Admin\\Teams": {
+    "ccn": 6,
+    "ccnMethodMax": 4,
+    "mi": 46.65,
+    "loc": 77
+  },
+  "App\\Livewire\\HomePage": {
+    "ccn": 16,
+    "ccnMethodMax": 9,
+    "mi": 52.02,
+    "loc": 109
+  },
+  "App\\Livewire\\JobDetail": {
+    "ccn": 5,
+    "ccnMethodMax": 2,
+    "mi": 47.51,
+    "loc": 77
+  },
+  "App\\Http\\Controllers\\MetricsController": {
+    "ccn": 6,
+    "ccnMethodMax": 4,
+    "mi": 87.78,
+    "loc": 52
+  },
+  "App\\Http\\Controllers\\Auth\\SSOController": {
+    "ccn": 18,
+    "ccnMethodMax": 7,
+    "mi": 37.68,
+    "loc": 122
+  },
+  "App\\Http\\Controllers\\Api\\V1\\Admin\\UsersController": {
+    "ccn": 6,
+    "ccnMethodMax": 6,
+    "mi": 43.58,
+    "loc": 49
+  },
+  "App\\Http\\Controllers\\Api\\V1\\Admin\\TeamsController": {
+    "ccn": 1,
+    "ccnMethodMax": 1,
+    "mi": 55.77,
+    "loc": 27
+  },
+  "App\\Http\\Controllers\\Api\\V1\\Admin\\ApiTokensController": {
+    "ccn": 3,
+    "ccnMethodMax": 3,
+    "mi": 64.5,
+    "loc": 9
+  },
+  "App\\Http\\Controllers\\Api\\V1\\Admin\\TeamMembersController": {
+    "ccn": 1,
+    "ccnMethodMax": 1,
+    "mi": 59.13,
+    "loc": 15
+  },
+  "App\\Http\\Controllers\\Api\\V1\\JobsController": {
+    "ccn": 17,
+    "ccnMethodMax": 7,
+    "mi": 67.61,
+    "loc": 124
+  },
+  "App\\Jobs\\RecordCheckIn": {
+    "ccn": 2,
+    "ccnMethodMax": 2,
+    "mi": 62.57,
+    "loc": 16
+  },
+  "App\\Console\\Commands\\AddUser": {
+    "ccn": 7,
+    "ccnMethodMax": 5,
+    "mi": 63.41,
+    "loc": 63
+  }
+}
