@@ -188,6 +188,25 @@ r.raise_for_status()</pre>
 
     <flux:separator class="my-8" />
 
+    <flux:heading size="lg">Check-in metadata</flux:heading>
+    <flux:text class="mt-2">
+        A check-in can carry a few numbers or short notes about the run, such as how many files a backup copied.
+        Add them to the job's check-in URL as a query string. Numbers are stored as numbers, so they can be graphed,
+        and they appear as extra columns in the job's recent check-ins and in its CSV download.
+    </flux:text>
+    <pre class="mt-4 overflow-x-auto rounded bg-zinc-100 p-3 text-xs dark:bg-zinc-800">curl -fsS "{{ $baseUrl }}/check-in/your-check-in-token?files=1234&amp;bytes=5678901"</pre>
+    <flux:text class="mt-4">
+        Up to 20 keys, key names up to 50 characters and values up to 255 characters. Anything over those limits
+        is refused with a <code>422</code> and the check-in is not recorded, so a broken script shows up as a missed
+        check-in rather than silently losing data.
+    </flux:text>
+    <flux:text class="mt-2">
+        The query string ends up in web server and proxy access logs, so never put passwords, tokens or personal
+        information in it.
+    </flux:text>
+
+    <flux:separator class="my-8" />
+
     <flux:heading size="lg">Prometheus metrics</flux:heading>
     <flux:text class="mt-2">
         Current estate figures are exposed at <code>{{ $baseUrl }}/metrics</code> in Prometheus text format, for

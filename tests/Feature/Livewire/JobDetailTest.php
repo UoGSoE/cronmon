@@ -3,6 +3,7 @@
 use App\Livewire\JobDetail;
 use App\Models\Job;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Livewire\Livewire;
 
 it('unsilences the job when the owner flips the toggle off', function () {
@@ -122,4 +123,36 @@ it('shows the job name, schedule and check-in URL to the owning user', function 
         ->assertSee('Nightly backup')
         ->assertSee('0 2 * * *')
         ->assertSee($job->check_in_token);
+});
+
+it('shows a column for each metadata key in the recent check-ins', function () {
+    $owner = User::factory()->create();
+    $job = Job::factory()->forUser($owner)->create();
+    $job->recordCheckIn('203.0.113.42', now()->subHour(), ['files' => 1234, 'bytes' => 5678901]);
+    $job->recordCheckIn('203.0.113.42', now(), ['files' => 99, 'status' => 'clean']);
+
+    $this->actingAs($owner)
+        ->get(route('jobs.show', $job))
+        ->assertOk()
+        ->assertSeeInOrder(['bytes', 'files', 'status'])
+        ->assertSee('5,678,901')
+        ->assertSee('clean');
+});
+
+it('downloads the full check-in history with metadata as a csv, oldest first', function () {
+    $owner = User::factory()->create();
+    $job = Job::factory()->forUser($owner)->create(['name' => 'Nightly backup']);
+    $otherJob = Job::factory()->forUser($owner)->create();
+    $job->recordCheckIn('203.0.113.42', Carbon::parse('2026-10-04 01:00:00'), ['files' => 1234, 'bytes' => 5678901]);
+    $job->recordCheckIn('203.0.113.42', Carbon::parse('2026-10-05 01:00:00'), ['files' => 99, 'status' => 'clean']);
+    $otherJob->recordCheckIn('198.51.100.7', Carbon::parse('2026-10-05 02:00:00'), ['files' => 5]);
+
+    Livewire::actingAs($owner)
+        ->test(JobDetail::class, ['job' => $job])
+        ->call('downloadCheckIns')
+        ->assertFileDownloaded('nightly-backup-check-ins.csv', implode("\n", [
+            'checked_in_at,source_ip,bytes,files,status',
+            '2026-10-04T01:00:00+00:00,203.0.113.42,5678901,1234,',
+            '2026-10-05T01:00:00+00:00,203.0.113.42,,99,clean',
+        ])."\n");
 });

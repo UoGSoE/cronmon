@@ -74,7 +74,12 @@
     </flux:fieldset>
 
     <div class="mt-8">
-        <flux:heading size="sm">Recent check-ins</flux:heading>
+        <div class="flex items-center justify-between gap-4">
+            <flux:heading size="sm">Recent check-ins</flux:heading>
+            @if ($recentCheckIns->isNotEmpty())
+                <flux:button wire:click="downloadCheckIns" size="sm" icon="arrow-down-tray">Download CSV</flux:button>
+            @endif
+        </div>
         @if ($recentCheckIns->isEmpty())
             <flux:text class="mt-2">No check-ins yet.</flux:text>
         @else
@@ -82,12 +87,18 @@
                 <flux:table.columns>
                     <flux:table.column>When</flux:table.column>
                     <flux:table.column>Source IP</flux:table.column>
+                    @foreach ($metadataKeys as $key)
+                        <flux:table.column>{{ $key }}</flux:table.column>
+                    @endforeach
                 </flux:table.columns>
                 <flux:table.rows>
                     @foreach ($recentCheckIns as $checkIn)
                         <flux:table.row wire:key="check-in-row-{{ $checkIn->id }}">
                             <flux:table.cell>{{ $checkIn->checked_in_at->toDayDateTimeString() }} ({{ $checkIn->checked_in_at->diffForHumans() }})</flux:table.cell>
                             <flux:table.cell>{{ $checkIn->source_ip ?? '—' }}</flux:table.cell>
+                            @foreach ($metadataKeys as $key)
+                                <flux:table.cell>{{ $checkIn->metadataForDisplay($key) }}</flux:table.cell>
+                            @endforeach
                         </flux:table.row>
                     @endforeach
                 </flux:table.rows>

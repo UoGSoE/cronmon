@@ -172,13 +172,14 @@ class Job extends Model
         return $this->grace_units->toMinutes($this->grace_value);
     }
 
-    public function recordCheckIn(?string $sourceIp = null, ?Carbon $at = null): CheckIn
+    public function recordCheckIn(?string $sourceIp = null, ?Carbon $at = null, ?array $metadata = null): CheckIn
     {
         $at ??= now();
 
         $checkIn = $this->checkIns()->create([
             'checked_in_at' => $at,
             'source_ip' => $sourceIp,
+            'metadata' => $metadata,
         ]);
 
         $this->last_checked_in_at = $at;

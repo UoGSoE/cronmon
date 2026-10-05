@@ -19,4 +19,14 @@ class CheckInFactory extends Factory
             'source_ip' => fake()->ipv4(),
         ];
     }
+
+    public function withBackupMetadata(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'metadata' => [
+                'files' => fake()->numberBetween(10_000, 2_000_000),
+                'bytes' => fake()->numberBetween(1_000_000_000, 500_000_000_000),
+            ],
+        ]);
+    }
 }

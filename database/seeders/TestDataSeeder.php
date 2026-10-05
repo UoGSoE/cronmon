@@ -609,6 +609,7 @@ class TestDataSeeder extends Seeder
                 CheckIn::factory()
                     ->count(3)
                     ->for($job)
+                    ->when(str_contains($job->name, 'backup'), fn ($factory) => $factory->withBackupMetadata())
                     ->sequence(
                         ['checked_in_at' => now()->subDays(2)],
                         ['checked_in_at' => now()->subDay()],

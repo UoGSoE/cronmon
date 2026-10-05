@@ -20,6 +20,7 @@ class CheckInResource extends JsonResource
             'id' => $this->id,
             'checked_in_at' => $this->checked_in_at?->toIso8601String(),
             'source_ip' => $this->source_ip,
+            'metadata' => $this->metadata,
         ];
     }
 }

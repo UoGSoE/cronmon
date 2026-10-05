@@ -26,3 +26,16 @@ it('lists check-ins newest first for a job the user can see', function () {
     $ids = collect($response->json('check_ins.data'))->pluck('id')->all();
     expect($ids)->toEqual([$newest->id, $middle->id, $oldest->id]);
 });
+
+it('includes each check-in metadata in the listing', function () {
+    $alice = User::factory()->create();
+    $job = Job::factory()->forUser($alice)->create();
+    $job->checkIns()->create(['checked_in_at' => now()->subHour(), 'metadata' => ['files' => 1234, 'bytes' => 5678901]]);
+    $job->checkIns()->create(['checked_in_at' => now()->subHours(2)]);
+    Sanctum::actingAs($alice, ['jobs:read']);
+
+    $response = $this->getJson("/api/v1/jobs/{$job->id}/check-ins")->assertOk();
+
+    expect($response->json('check_ins.data.0.metadata'))->toBe(['files' => 1234, 'bytes' => 5678901])
+        ->and($response->json('check_ins.data.1'))->toHaveKey('metadata', null);
+});

@@ -15,6 +15,7 @@ class RecordCheckIn implements ShouldQueue
         public int $jobId,
         public ?string $sourceIp,
         public Carbon $at,
+        public ?array $metadata = null,
     ) {}
 
     public function handle(): void
@@ -25,6 +26,6 @@ class RecordCheckIn implements ShouldQueue
             return;
         }
 
-        $job->recordCheckIn($this->sourceIp, $this->at);
+        $job->recordCheckIn($this->sourceIp, $this->at, $this->metadata);
     }
 }

@@ -13,6 +13,7 @@ it('runs the TestDataSeeder cleanly and produces a usable local dataset', functi
         ->and(Team::count())->toBeGreaterThanOrEqual(2)
         ->and(Job::count())->toBeGreaterThan(0)
         ->and(CheckIn::count())->toBeGreaterThan(0)
+        ->and(CheckIn::whereNotNull('metadata')->count())->toBeGreaterThan(0)
         ->and(Job::whereNotNull('alerting_since')->count())->toBeGreaterThan(0)
         ->and(Job::whereNotNull('silenced_until')->count())->toBeGreaterThan(0)
         ->and(Team::whereNotNull('silenced_until')->count())->toBeGreaterThan(0);

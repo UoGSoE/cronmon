@@ -28,3 +28,14 @@ it('documents the prometheus metrics endpoint on /api/help', function () {
         ->assertSee('scrape_configs')
         ->assertSee('cronmon_jobs_alerting');
 });
+
+it('documents sending metadata with a check-in on /api/help', function () {
+    $alice = User::factory()->create();
+
+    $this->actingAs($alice)
+        ->get(route('api.help'))
+        ->assertOk()
+        ->assertSee('Check-in metadata')
+        ->assertSee('?files=1234&amp;bytes=5678901', false)
+        ->assertSee('access logs');
+});

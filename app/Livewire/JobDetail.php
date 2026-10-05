@@ -5,9 +5,11 @@ namespace App\Livewire;
 use App\Enums\GraceUnit;
 use App\Enums\ScheduleInterval;
 use App\Livewire\Forms\JobForm;
+use App\Models\CheckIn;
 use App\Models\Job;
 use Flux\Flux;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -37,11 +39,14 @@ class JobDetail extends Component
 
     public function render()
     {
+        $recentCheckIns = $this->job->checkIns()
+            ->latest('checked_in_at')
+            ->limit(20)
+            ->get();
+
         return view('livewire.job-detail', [
-            'recentCheckIns' => $this->job->checkIns()
-                ->latest('checked_in_at')
-                ->limit(20)
-                ->get(),
+            'recentCheckIns' => $recentCheckIns,
+            'metadataKeys' => CheckIn::metadataKeysAcross($recentCheckIns),
             'checkInUrl' => route('check-in', $this->job->check_in_token),
             'teams' => auth()->user()->teams()->orderBy('name')->get(),
             'intervalOptions' => ScheduleInterval::cases(),
@@ -110,6 +115,27 @@ class JobDetail extends Component
         Flux::toast('Job updated.', variant: 'success');
 
         $this->job = $this->job->fresh();
+    }
+
+    public function downloadCheckIns()
+    {
+        $checkIns = $this->job->checkIns()->oldest('checked_in_at')->get();
+        $metadataKeys = CheckIn::metadataKeysAcross($checkIns);
+
+        return response()->streamDownload(function () use ($checkIns, $metadataKeys) {
+            $csv = fopen('php://output', 'w');
+            fputcsv($csv, ['checked_in_at', 'source_ip', ...$metadataKeys], escape: '');
+
+            foreach ($checkIns as $checkIn) {
+                fputcsv($csv, [
+                    $checkIn->checked_in_at->toIso8601String(),
+                    $checkIn->source_ip,
+                    ...$metadataKeys->map(fn (string $key) => $checkIn->metadata[$key] ?? null),
+                ], escape: '');
+            }
+
+            fclose($csv);
+        }, Str::slug($this->job->name).'-check-ins.csv');
     }
 
     public function delete()

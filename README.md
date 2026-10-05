@@ -38,6 +38,28 @@ A few things worth knowing:
 - Use `-fsS` so curl fails the cron command on a non-2xx response.
 - The response body is empty; the 200 status is the acknowledgement.
 
+### Sending metadata with a check-in
+
+A check-in can carry a few figures about the run, such as how much
+a backup copied. Add them as a query string:
+
+```bash
+curl -fsS "https://cronmon.example.ac.uk/check-in/<token>?files=1234&bytes=5678901"
+```
+
+- Any key names are allowed. Values that look like numbers are
+  stored as numbers (so leading zeros are dropped), which keeps
+  them easy to graph in Metabase or similar.
+- Limits: up to 20 keys, key names up to 50 characters, values up
+  to 255 characters, and no array values like `files[]=1`. Breaking
+  a limit gets a `422` with a one-line reason and the check-in is
+  **not** recorded, so with `-fsS` the cron command fails visibly.
+- Metadata shows as extra columns in the job's recent check-ins,
+  in the job's **Download CSV** export (full history, raw values),
+  and in the API's check-in history.
+- The query string ends up in proxy and web server access logs, so
+  never put passwords, tokens or personal information in it.
+
 ## Prometheus metrics
 
 Cronmon exposes the current estate figures at `/metrics` in
