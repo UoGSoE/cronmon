@@ -58,3 +58,12 @@ it('leaves an ampersand in a team name as a literal, not an HTML entity', functi
     expect($body)->toContain('team="Resilience & Business Continuity"')
         ->and($body)->not->toContain('&amp;');
 });
+
+it('does not start a session or set any cookies when scraped', function () {
+    config(['cronmon.metrics.token' => 'super-secret']);
+
+    $response = $this->withToken('super-secret')->get(route('metrics'));
+
+    $response->assertOk();
+    expect($response->headers->getCookies())->toBeEmpty();
+});
