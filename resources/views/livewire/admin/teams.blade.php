@@ -2,7 +2,7 @@
     <div class="flex items-start justify-between gap-4">
         <div>
             <flux:heading size="xl">Teams</flux:heading>
-            <flux:text class="mt-2">Create teams, manage who's in them, edit team defaults.</flux:text>
+            <flux:text class="mt-2">Create teams, manage who's in them, edit team defaults. Click a team name to manage membership.</flux:text>
         </div>
         <flux:button wire:click="openCreate" icon="plus">New team</flux:button>
     </div>

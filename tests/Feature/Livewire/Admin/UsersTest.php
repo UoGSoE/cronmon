@@ -2,6 +2,7 @@
 
 use App\Livewire\Admin\Users;
 use App\Models\Job;
+use App\Models\Team;
 use App\Models\User;
 use Livewire\Livewire;
 
@@ -217,4 +218,44 @@ it('refuses to delete the signed-in admin even via confirmDelete', function () {
         ->call('confirmDelete', $admin->id);
 
     expect(User::find($admin->id))->not->toBeNull();
+});
+
+it('sets which teams a user belongs to via the user-form flyout', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $target = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $teamToKeep = Team::factory()->create();
+    $teamToLeave = Team::factory()->create();
+    $teamToJoin = Team::factory()->create();
+    $target->teams()->attach([$teamToKeep->id, $teamToLeave->id]);
+    $otherUser->teams()->attach([$teamToLeave->id]);
+
+    Livewire::actingAs($admin)
+        ->test(Users::class)
+        ->call('openEdit', $target->id)
+        ->assertSet('teamIds', [$teamToKeep->id, $teamToLeave->id])
+        ->set('teamIds', [$teamToKeep->id, $teamToJoin->id])
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($target->teams()->pluck('teams.id')->sort()->values()->all())->toBe([$teamToKeep->id, $teamToJoin->id])
+        ->and($otherUser->teams()->pluck('teams.id')->all())->toBe([$teamToLeave->id]);
+});
+
+it('rejects a non-existent team and leaves the user unchanged', function () {
+    $admin = User::factory()->create(['is_admin' => true]);
+    $target = User::factory()->create(['forenames' => 'Original']);
+    $existingTeam = Team::factory()->create();
+    $target->teams()->attach($existingTeam);
+
+    Livewire::actingAs($admin)
+        ->test(Users::class)
+        ->call('openEdit', $target->id)
+        ->set('form.forenames', 'Changed')
+        ->set('teamIds', [9999])
+        ->call('save')
+        ->assertHasErrors(['teamIds.0']);
+
+    expect($target->fresh()->forenames)->toBe('Original')
+        ->and($target->teams()->pluck('teams.id')->all())->toBe([$existingTeam->id]);
 });

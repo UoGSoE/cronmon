@@ -62,6 +62,13 @@
             <flux:input wire:model="form.forenames" label="Forenames" required />
             <flux:input wire:model="form.surname" label="Surname" required />
             <flux:input wire:model="form.email" type="email" label="Email" required />
+            @if ($teams->isNotEmpty())
+                <flux:checkbox.group wire:model="teamIds" label="Teams">
+                    @foreach ($teams as $team)
+                        <flux:checkbox :value="$team->id" :label="$team->name" wire:key="user-form-team-{{ $team->id }}" />
+                    @endforeach
+                </flux:checkbox.group>
+            @endif
             <flux:text size="sm">Admin status is set via the toggle on the row, not this form.</flux:text>
             <div class="flex justify-end gap-2">
                 <flux:button type="button" x-on:click="$flux.modal('user-form').close()">Cancel</flux:button>

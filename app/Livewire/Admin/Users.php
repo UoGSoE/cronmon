@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Team;
 use App\Models\User;
 use Flux\Flux;
 use Illuminate\Support\Str;
@@ -21,6 +22,8 @@ class Users extends Component
         'email' => '',
     ];
 
+    public array $teamIds = [];
+
     public ?int $deletingUserId = null;
 
     public ?string $deletingUserName = null;
@@ -35,6 +38,7 @@ class Users extends Component
     {
         return view('livewire.admin.users', [
             'users' => User::orderBy('surname')->orderBy('forenames')->get(),
+            'teams' => Team::orderBy('name')->get(),
             'transferCandidates' => User::query()
                 ->when($this->deletingUserId, fn ($q) => $q->where('id', '!=', $this->deletingUserId))
                 ->orderBy('surname')
@@ -67,6 +71,7 @@ class Users extends Component
             'surname' => '',
             'email' => '',
         ];
+        $this->teamIds = [];
         $this->resetErrorBag();
 
         Flux::modal('user-form')->show();
@@ -83,6 +88,7 @@ class Users extends Component
             'surname' => $user->surname,
             'email' => $user->email,
         ];
+        $this->teamIds = $user->teams()->pluck('teams.id')->all();
         $this->resetErrorBag();
 
         Flux::modal('user-form')->show();
@@ -100,6 +106,7 @@ class Users extends Component
             'form.forenames' => ['required', 'string', 'max:255'],
             'form.surname' => ['required', 'string', 'max:255'],
             'form.email' => ['required', 'email', Rule::unique('users', 'email')->ignore($this->editingUserId)],
+            'teamIds.*' => ['integer', 'exists:teams,id'],
         ]);
 
         $user = User::findOrNew($this->editingUserId);
@@ -112,6 +119,7 @@ class Users extends Component
         }
 
         $user->save();
+        $user->teams()->sync($this->teamIds);
 
         Flux::modal('user-form')->close();
         Flux::toast('User saved.', variant: 'success');
